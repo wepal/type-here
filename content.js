@@ -6,6 +6,10 @@ var _typingBar = document.createElement('div');
 _typingBar.style.cssText = "height: 40px; position: fixed; bottom:0%; width:100%; background-color: #65ff25; z-index: 100000";
 document.body.appendChild(_typingBar);  
 
+var _cursor = document.createElement('div');
+_cursor.style.cssText = "position:absolute;background-color: #aaa;mix-blend-mode: darken; z-index: 100000";
+document.body.appendChild(_cursor);  
+
 document.addEventListener('keypress', function(event){
     if(_typingNodes.length===0){
         return; //not typing
@@ -40,25 +44,10 @@ document.addEventListener('keypress', function(event){
 });
 
 function markError(){
-    var node = _typingNodes[0];
-    var text = node.nodeValue;
-    node.nodeValue = text.substr(_typingPos+1); //TODO empty?
-    if(_typingNodes.length==1){
-        _typingEndOffset -= (_typingPos+1);
-        console.log("_typingEndOffset "+_typingEndOffset)
-    }
-    if(_typingPos>0){
-        var part1text = text.substr(0,_typingPos);
-        var part1 = document.createTextNode(part1text);
-        node.parentNode.insertBefore(part1, node);        
-    }
-    var span = document.createElement("span");
-    span.textContent = text[_typingPos];
-    span.style.backgroundColor = "red";
-    node.parentNode.insertBefore(span, node);
-    _typingNodes.unshift(span.childNodes[0]);
-    _typingPos=0;
-    popEmpty();
+    var div = document.createElement('div');
+    div.style.cssText = "position:absolute;background-color: #f00;mix-blend-mode: overlay; z-index: 100001";
+    setDivRect(div);
+    document.body.appendChild(div);  
 }
 
 function checkFinished(){
@@ -80,16 +69,23 @@ function popEmpty(){
     }
 }
 
-function select(){
-    var sel = window.getSelection();
-    sel.removeAllRanges();
+function setDivRect(div){
     if(_typingNodes.length===0){
         return;
     }
     var range = document.createRange();
     range.setStart(_typingNodes[0],_typingPos)
     range.setEnd(_typingNodes[0],_typingPos+1)
-    sel.addRange(range);    
+    var rect = range.getBoundingClientRect();
+    range.detach();
+    div.style.left = (rect.left + window.scrollX) + "px";
+    div.style.top = (rect.top + window.scrollY) + "px";
+    div.style.width = rect.width + "px";
+    div.style.height = rect.height + "px";
+}
+
+function select(){
+    setDivRect(_cursor);
 }
 
 function getNodes(parent){
@@ -140,6 +136,7 @@ chrome.runtime.onMessage.addListener(
         _typingPos = range.startOffset;
         _typingEndOffset = range.endOffset;
         select();
+        window.getSelection().removeAllRanges();
         console.log("started typing")
         
         /*document.designMode = "on";
