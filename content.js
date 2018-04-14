@@ -7,7 +7,7 @@ _typingBar.style.cssText = "height: 40px; position: fixed; bottom:0%; width:100%
 document.body.appendChild(_typingBar);  
 
 var _cursor = document.createElement('div');
-_cursor.style.cssText = "position:absolute;background-color: #00f;color: #fff; z-index: 100002";
+_cursor.style.cssText = "position:absolute;background-color:#33f;color:#fff;z-index: 100002;line-height:normal";
 document.body.appendChild(_cursor);  
 
 document.addEventListener('keypress', function(event){
@@ -56,7 +56,7 @@ function setFontStyle(div){
 function markError(expected){
     var div = document.createElement('div');
     div.textContent = expected;
-    div.style.cssText = "position:absolute;background-color: #f00;color: #fff;z-index: 100001";
+    div.style.cssText = "position:absolute;background-color: #f00;color: #fff;z-index: 100001;line-height:normal";
     setDivRect(div);
     setFontStyle(div);
     document.body.appendChild(div);  
