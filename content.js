@@ -7,7 +7,7 @@ _typingBar.style.cssText = "height: 40px; position: fixed; bottom:0%; width:100%
 document.body.appendChild(_typingBar);  
 
 var _cursor = document.createElement('div');
-_cursor.style.cssText = "position:absolute;background-color: #aaa;mix-blend-mode: darken; z-index: 100000";
+_cursor.style.cssText = "position:absolute;background-color: #00f;color: #fff; z-index: 100002";
 document.body.appendChild(_cursor);  
 
 document.addEventListener('keypress', function(event){
@@ -21,7 +21,7 @@ document.addEventListener('keypress', function(event){
     var pressed = String.fromCharCode(event.charCode);
     if(pressed != expected){
         _typingBar.textContent = "expected ["+expected+"], pressed ["+pressed+"]";
-        markError();
+        markError(expected);
         return;
     }
     if(checkFinished()){
@@ -43,10 +43,22 @@ document.addEventListener('keypress', function(event){
     select();
 });
 
-function markError(){
+function setFontStyle(div){
+    var el = _typingNodes[0].parentElement;
+    var style = window.getComputedStyle(el);
+    var props=['font-family','font-size','font-stretch','font-style',
+        'font-variant','font-weight']
+    for(var i=0;i<props.length;i++){
+        div.style[props[i]] = style[props[i]]        
+    }
+}
+
+function markError(expected){
     var div = document.createElement('div');
-    div.style.cssText = "position:absolute;background-color: #f00;mix-blend-mode: overlay; z-index: 100001";
+    div.textContent = expected;
+    div.style.cssText = "position:absolute;background-color: #f00;color: #fff;z-index: 100001";
     setDivRect(div);
+    setFontStyle(div);
     document.body.appendChild(div);  
 }
 
@@ -85,7 +97,11 @@ function setDivRect(div){
 }
 
 function select(){
+    var node = _typingNodes[0];
+    var expected = node.nodeValue[_typingPos];
+    _cursor.textContent = expected;
     setDivRect(_cursor);
+    setFontStyle(_cursor);    
 }
 
 function getNodes(parent){
