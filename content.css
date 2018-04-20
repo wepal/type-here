@@ -1,0 +1,9 @@
+@keyframes cursorBlink {
+    0%   {visibility: hidden;}
+    50%  {visibility: visible;}
+}
+ 
+@keyframes cursorBlinkColor {
+    0%   {background-color: #f00;}
+    50%  {background-color: #00f;}
+}

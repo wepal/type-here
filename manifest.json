@@ -10,7 +10,8 @@
     "content_scripts": [
         {
           "matches": ["*://*/*"],
-          "js": ["content.js"]
+          "js": ["content.js"],
+          "css": ["content.css"]
         }
     ],
     "web_accessible_resources": [

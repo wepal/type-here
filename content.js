@@ -2,20 +2,19 @@ var _typingNodes = [];
 var _typingEndOffset;
 var _typingPos;
 
+var _allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,.-;:_öäüÖÄÜ";
+
 var _typingBar = document.createElement('div');
 _typingBar.style.cssText = "height: 40px; position: fixed; bottom:0%; width:100%; background-color: #65ff25; z-index: 100000";
 document.body.appendChild(_typingBar);  
 
-var _cursor = document.createElement('div');
-_cursor.style.cssText = "position:absolute;background-color:#33f;color:#fff;z-index: 100002;line-height:normal";
-document.body.appendChild(_cursor);  
+var _cursor;
 
 document.addEventListener('keypress', function(event){
     if(_typingNodes.length===0){
         return; //not typing
     }
     event.preventDefault();
-    select();
     var node = _typingNodes[0];
     var expected = node.nodeValue[_typingPos];
     var pressed = String.fromCharCode(event.charCode);
@@ -27,8 +26,26 @@ document.addEventListener('keypress', function(event){
     if(checkFinished()){
         return;
     }
+    while(true){
+        next();
+        if(checkFinished()){
+            return;
+        }
+        var node = _typingNodes[0];
+        var expected = node.nodeValue[_typingPos];
+        var allowed = _allowedChars.indexOf(expected)!=-1;        
+        if(allowed){
+            break;
+        }
+    }
+    checkFinished();
+});
+
+function next(){
+    var node = _typingNodes[0];
     if(_typingPos + 1 < node.nodeValue.length){
         _typingPos = _typingPos + 1;
+        updateCursor();
     }else{
         //end of node
         console.log("end of node");
@@ -38,10 +55,8 @@ document.addEventListener('keypress', function(event){
             node = _typingNodes[0];
             _typingPos = 0;
         }
-    }
-    checkFinished();
-    select();
-});
+    }    
+}
 
 function setFontStyle(div){
     var el = _typingNodes[0].parentElement;
@@ -53,13 +68,24 @@ function setFontStyle(div){
     }
 }
 
+function createCursor(){
+    if(_cursor!==undefined){
+        document.body.removeChild(_cursor);
+    }
+    _cursor = document.createElement('div');
+    _cursor.style.cssText = "position:absolute;background-color:#33f;color:#fff;z-index: 100002;line-height:normal;visibility:hidden";
+    _cursor.style['animation'] = "cursorBlink 250ms steps(2) 0s infinite normal";        
+    document.body.appendChild(_cursor);  
+}
+
 function markError(expected){
     var div = document.createElement('div');
     div.textContent = expected;
-    div.style.cssText = "position:absolute;background-color: #f00;color: #fff;z-index: 100001;line-height:normal";
+    div.style.cssText = "position:absolute;background-color: #f80;color: #000;z-index: 100001;line-height:normal";
     setDivRect(div);
     setFontStyle(div);
     document.body.appendChild(div);  
+    updateCursor(true);
 }
 
 function checkFinished(){
@@ -96,12 +122,28 @@ function setDivRect(div){
     div.style.height = rect.height + "px";
 }
 
-function select(){
+function updateCursor(error = false){
+    if(_cursor===undefined){
+        createCursor();
+    }
+    if(_typingNodes.length==0){
+        _cursor.style.visibility = "hidden";
+        return
+    }
+    if(error){
+        createCursor();
+        _cursor.style['background-color']="#f00";      
+        //_cursor.style['animation'] = "cursorBlink 200ms steps(2) 0s 3 normal";        
+    }else{
+        _cursor.style['background-color']="#33f";       
+        //_cursor.style['animation'] = null;
+    }
+    _cursor.style.visibility = "visible";
+    setDivRect(_cursor);
+    setFontStyle(_cursor);    
     var node = _typingNodes[0];
     var expected = node.nodeValue[_typingPos];
     _cursor.textContent = expected;
-    setDivRect(_cursor);
-    setFontStyle(_cursor);    
 }
 
 function getNodes(parent){
@@ -151,7 +193,7 @@ chrome.runtime.onMessage.addListener(
         }
         _typingPos = range.startOffset;
         _typingEndOffset = range.endOffset;
-        select();
+        updateCursor();
         window.getSelection().removeAllRanges();
         console.log("started typing")
         
