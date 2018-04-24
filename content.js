@@ -20,10 +20,16 @@ function createTypingBar(){
     }
     var bar = document.createElement('div');
     bar.id = _idPrefix+"bar";
-    bar.style.cssText = "all: unset; height: 40px; position: fixed; bottom:0%; width:100%; background-color: #65ff25; z-index: 100000";
     document.body.appendChild(bar);  
+    
+    var barHandle = document.createElement('div');
+    barHandle.id = _idPrefix+"barHandle";
+    barHandle.classList.add("ui-resizable-handle");
+    barHandle.classList.add("ui-resizable-n");
+    bar.appendChild(barHandle); 
+    
     $(bar).resizable({
-      handles: "n"
+      handles: {n:  barHandle}
     });
     
     var message = document.createElement('div');
