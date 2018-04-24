@@ -22,6 +22,9 @@ function createTypingBar(){
     bar.id = _idPrefix+"bar";
     bar.style.cssText = "all: unset; height: 40px; position: fixed; bottom:0%; width:100%; background-color: #65ff25; z-index: 100000";
     document.body.appendChild(bar);  
+    $(bar).resizable({
+      handles: "n"
+    });
     
     var message = document.createElement('div');
     message.id = _idPrefix+"message";

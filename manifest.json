@@ -2,6 +2,7 @@
     "name": "Type Here",
     "description" : "Practice typing on any website",
     "version": "0.1",
+    "author": "wepal",
     "manifest_version": 2,
     "permissions": ["contextMenus"],
     "background": {
@@ -10,8 +11,12 @@
     "content_scripts": [
         {
           "matches": ["*://*/*"],
-          "js": ["content.js"],
-          "css": ["content.css"]
+          "js": ["content.js",
+                 "external/jquery/jquery.js",
+                 "jquery-ui.min.js"
+                 ],
+          "css": ["content.css",
+                  "jquery-ui.min.css"]
         }
     ],
     "web_accessible_resources": [
