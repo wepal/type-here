@@ -8,6 +8,7 @@ var _allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 123456
 var _keyListener;
 var _resizeListener;
 var _idPrefix = "typeHereExtension_";
+var _chart;
 
 function barMessage(text){
     var message = document.getElementById(_idPrefix+"message");
@@ -34,28 +35,128 @@ function createTypingBar(){
     
     var message = document.createElement('div');
     message.id = _idPrefix+"message";
-    message.style.cssText = "all: unset";
+    message.style.cssText = "all: initial;";
     bar.appendChild(message);    
     
     var text = document.createElement('div');
     text.id = _idPrefix+"text";
-    text.style.cssText = "all: unset";
+    text.style.cssText = "all: initial;";
     bar.appendChild(text);      
     
     var preText = document.createElement('div');
     preText.id = _idPrefix+"preText";
-    preText.style.cssText = "all: unset;color:#555;background-color:#0000";
+    preText.style.cssText = "all: initial;color:#555;background-color:#0000";
     text.appendChild(preText);  
     
     var curText = document.createElement('div');
     curText.id = _idPrefix+"curText";
-    curText.style.cssText = "all: unset;color:#fff;background-color:#00f";
+    curText.style.cssText = "all: initial;color:#fff;background-color:#00f";
     text.appendChild(curText);  
     
     var postText = document.createElement('div');
     postText.id = _idPrefix+"postText";
-    postText.style.cssText = "all: unset;color:#555;background-color:#0000";
+    postText.style.cssText = "all: initial;color:#555;background-color:#0000";
     text.appendChild(postText);  
+    
+    var chartContainer = document.createElement('div');
+    chartContainer.style.cssText = "all: initial;width: 50%; height: 100%; float: right";
+    bar.appendChild(chartContainer);  
+    
+    var chart = document.createElement('canvas');
+    chart.id = _idPrefix+"diagram";
+    chart.style.cssText = "/*all: initial;*/width: 100%; height: 100%";
+    chartContainer.appendChild(chart);  
+    
+    createDiagram();
+}
+
+function createDiagram(){
+    Chart.pluginService.register({
+        beforeDraw: function (chart, easing) {
+            if (chart.config.options.chartArea && chart.config.options.chartArea.backgroundColor) {
+                var ctx = chart.chart.ctx;
+                var chartArea = chart.chartArea;
+                ctx.save();
+                ctx.fillStyle = chart.config.options.chartArea.backgroundColor;
+                ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+                ctx.restore();
+            }
+        }
+    });
+    
+    var ctx = document.getElementById(_idPrefix+"diagram").getContext('2d');
+    _chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: "error ratio",
+                backgroundColor: '#1111',
+                borderColor: '#111',
+                borderWidth: 1.,
+                pointRadius: 0,
+                data: [{x:0,y:0}]
+            }]
+        },
+        options: {
+            legend: {display: false},
+            responsive: true,
+            maintainAspectRatio: false,
+            borderColor: '#000',
+            borderWidth: 1,
+            scales: {
+                xAxes: [                
+                {
+                    type: 'linear',
+                    gridLines:{
+                        drawTicks: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        padding: 5,
+                        fontSize: 10
+                    }
+                }
+                ],
+                yAxes: [{
+                    type: 'linear',
+                    gridLines:{
+                        drawTicks: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        fontColor: '#666',
+                        min: 0,
+                        max: 5,
+                        //stepSize: 1,
+                        callback: function(value, index, values) {
+                            return value + " %";
+                        },
+                        padding: 5,
+                        fontSize: 10
+                    }
+                }]
+            },
+            chartArea: {
+                backgroundColor: '#fff5'
+            }
+        }
+    });
+}
+
+function updateDiagram(){
+    var errors=0;
+    for(var i=0;i<_chars.length;i++){
+        if(_chars[i].error!==undefined){
+            errors++;
+        }
+    }
+    var data = {x: _pos, y: 100.*errors/_pos};
+    _chart.data.datasets[0].data.push(data);
+    _chart.options.scales.xAxes[0].ticks.max = _chars.length;
+    _chart.update();
 }
 
 function onKey(pressed){
@@ -77,6 +178,7 @@ function onKey(pressed){
     }
     updateCursor();
     updateTypingBarText();
+    updateDiagram();
 }
 
 function updateTypingBarText(){
@@ -106,13 +208,13 @@ function createCursor(){
         document.body.removeChild(_cursor);
     }
     _cursor = document.createElement('div');
-    _cursor.style.cssText = "all:unset;position:absolute;background-color:#33f;color:#fff;z-index: 100002;line-height:normal;visibility:visible";
+    _cursor.style.cssText = "all: initial;position:absolute;background-color:#33f;color:#fff;z-index: 100002;line-height:normal;visibility:visible";
     document.body.appendChild(_cursor);  
 }
 
 function createErrorDiv(){
     var div = document.createElement('div');
-    div.style.cssText = "all: unset;position:absolute;background-color: #f80;color: #000;z-index: 100001;line-height:normal";
+    div.style.cssText = "all: initial;position:absolute;background-color: #f80;color: #000;z-index: 100001;line-height:normal";
     updateCharOverlay(div, _pos);
     document.body.appendChild(div);  
     _chars[_pos].error = div;
